@@ -3,10 +3,25 @@ const guideById=new Map(window.TRAVEL_GUIDES.map(item=>[item.id,item]));
 const reply=(value,status=200)=>Response.json(value,{status});
 const regions=window.TRAVEL_GUIDES.filter(item=>item.id.startsWith('local-region-'));
 const asSearchItem=item=>({id:item.id,title:item.title,snippet:item.snippet,sourceLabel:item.source,local:true,image:item.image,imageAlt:item.imageAlt,imageSource:item.imageSource,imageSourceUrl:item.imageSourceUrl,category:item.category,attractionType:item.attractionType,recommendation:item.recommendation,city:item.city,province:item.province,mapLabel:item.mapLabel});
+function shuffled(items){
+  const list=[...items];
+  for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
+  return list;
+}
+function featuredGuides(){
+  const groups=new Map();
+  for(const item of window.TRAVEL_GUIDES.filter(item=>item.category==='景点')){
+    if(!groups.has(item.province))groups.set(item.province,[]);
+    groups.get(item.province).push(item);
+  }
+  const leads=shuffled([...groups.values()]).map(group=>shuffled(group)[0]);
+  const selected=new Set(leads.map(item=>item.id));
+  return [...leads,...shuffled(window.TRAVEL_GUIDES.filter(item=>!selected.has(item.id)))];
+}
 function localSearch(q){
   const key=normalize(q);
   const placeKey=key.replace(/(旅游攻略|好玩的地方|旅游|攻略|景点)$/,'').replace(/(特别行政区|自治区|省|市)$/,'');
-  if(key==='精选'||key==='热门')return {items:window.TRAVEL_GUIDES,kind:'featured'};
+  if(key==='精选'||key==='热门')return {items:featuredGuides(),kind:'featured'};
   if(key==='目的地')return {items:regions,kind:'category'};
   if(key==='景点')return {items:window.TRAVEL_GUIDES.filter(item=>item.category==='景点'),kind:'category'};
   if(['自然风光','古迹人文','城市漫游','亲子体验'].includes(q))return {items:window.TRAVEL_GUIDES.filter(item=>item.attractionType===q),kind:'type'};
