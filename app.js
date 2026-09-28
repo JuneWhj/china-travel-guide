@@ -1,6 +1,7 @@
 const $=selector=>document.querySelector(selector);
 const input=$('#searchInput'),grid=$('#guideGrid'),status=$('#status'),empty=$('#emptyState');
 let searchAbort,articleAbort,currentId,lastQuery='',lastFocus;
+let visibleItems=[],visibleCount=0;
 function element(tag,text,className) {
   const node=document.createElement(tag);
   if(text!==undefined) node.textContent=text;
@@ -25,13 +26,28 @@ async function api(path,signal) {
   return value;
 }
 function setEmpty(message) {empty.textContent=message;empty.classList.add('show');}
+function renderCard(item){
+  const card=element('article',undefined,'guide-card');
+  if(item.image){const media=element('figure',undefined,'guide-media');media.append(imageElement(item.image,item.imageAlt||item.title));card.append(media);}
+  card.append(element('span',(item.category||'目的地')+' · '+(item.city||'中国')+' · '+(item.mapLabel?'带位置地图':'开放资料'),'guide-source'),element('h3',item.title),element('p',plainSnippet(item.snippet)));
+  const button=element('button','站内阅读 →','guide-link');
+  button.addEventListener('click',()=>openArticle(item.id,item.title));
+  card.append(button);grid.append(card);
+}
+function showMore(){
+  const next=visibleItems.slice(visibleCount,visibleCount+12);
+  next.forEach(renderCard);visibleCount+=next.length;
+  const button=$('#moreResults');
+  button.hidden=visibleCount>=visibleItems.length;
+  if(!button.hidden)button.textContent='查看更多攻略（已显示 '+visibleCount+' / '+visibleItems.length+'）';
+}
 async function search(query) {
   const q=query.trim();
   if(!q||q.length>80) return;
   searchAbort?.abort(); articleAbort?.abort();
   const controller=new AbortController(); searchAbort=controller;
   lastQuery=q;input.value=q;$('#reader').hidden=true;$('#results').hidden=false;
-  $('#retry').hidden=true;grid.replaceChildren();empty.classList.remove('show');
+  $('#retry').hidden=true;$('#moreResults').hidden=true;grid.replaceChildren();empty.classList.remove('show');
   $('#resultsTitle').textContent=q==='精选'?'精选景点与美食':'“'+q+'”的旅行资料';
   status.textContent='正在获取旅行资料…';grid.setAttribute('aria-busy','true');
   history.replaceState(null,'','?q='+encodeURIComponent(q));
@@ -42,14 +58,7 @@ async function search(query) {
     status.textContent='找到 '+data.items.length+' 条资料'+(data.live===false?' · 本地精选':'');
     if(data.notice) status.textContent+=' · '+data.notice;
     if(!data.items.length) setEmpty('暂未找到相关资料。试试更简短的地名，例如“大理”或“北京”。');
-    for(const item of data.items) {
-      const card=element('article',undefined,'guide-card');
-      if(item.image){const media=element('figure',undefined,'guide-media');media.append(imageElement(item.image,item.imageAlt||item.title));card.append(media);}
-      card.append(element('span',(item.category||'目的地')+' · '+(item.city||'中国')+' · '+(item.mapLabel?'带位置地图':'开放资料'),'guide-source'),element('h3',item.title),element('p',plainSnippet(item.snippet)));
-      const button=element('button','站内阅读 →','guide-link');
-      button.addEventListener('click',()=>openArticle(item.id,item.title));
-      card.append(button);grid.append(card);
-    }
+    visibleItems=data.items;visibleCount=0;showMore();
   } catch(error) {
     if(controller.signal.aborted) return;
     status.textContent='获取失败';setEmpty(error.message);$('#retry').hidden=false;
@@ -110,6 +119,18 @@ async function openArticle(id,title) {
 }
 $('#searchForm').addEventListener('submit',event=>{event.preventDefault();search(input.value);});
 document.querySelectorAll('[data-query]').forEach(button=>button.addEventListener('click',()=>search(button.dataset.query)));
+$('#moreResults').addEventListener('click',showMore);
+if(Array.isArray(window.TRAVEL_GUIDES)){
+  const guides=window.TRAVEL_GUIDES;
+  const regions=[...new Set(guides.filter(item=>item.id.startsWith('local-region-')).map(item=>item.province))];
+  const foods=guides.filter(item=>item.category==='美食');
+  const foodCities=new Set(foods.map(item=>item.city));
+  $('#catalogStats').textContent='站内收录 '+guides.length+' 篇攻略 · 覆盖 '+regions.length+' 个地区 · '+foods.length+' 篇美食指南';
+  $('#foodStats').textContent='已收录 '+foods.length+' 篇美食指南，涉及 '+foodCities.size+' 个城市或目的地；每篇附可寻找的街区位置。';
+  const select=$('#regionSelect');
+  regions.forEach(region=>{const option=element('option',region);option.value=region;select.append(option);});
+  select.addEventListener('change',()=>{if(select.value)search(select.value);});
+}
 $('#retry').addEventListener('click',()=>search(lastQuery));
 $('#retryArticle').addEventListener('click',()=>openArticle(currentId,$('#articleTitle').textContent));
 $('#back').addEventListener('click',()=>{articleAbort?.abort();$('#reader').hidden=true;$('#results').hidden=false;lastFocus?.focus();});
