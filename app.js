@@ -26,6 +26,19 @@ async function api(path,signal) {
   return value;
 }
 function setEmpty(message) {empty.textContent=message;empty.classList.add('show');}
+function mapSearchUrl(name,city){
+  const url=new URL('https://uri.amap.com/search');
+  const place=String(name||'').replace(/（[^）]*）/g,'').replace(/\s*·\s*.*$/,'').trim();
+  url.searchParams.set('keyword',[city,place].filter(Boolean).join(' '));
+  if(city)url.searchParams.set('city',city);
+  url.searchParams.set('view','map');url.searchParams.set('callnative','0');url.searchParams.set('src','china-travel-guide');
+  return url.href;
+}
+function mapLink(name,city,label='在高德地图查看位置 ↗'){
+  const link=element('a',label,'map-link');link.href=mapSearchUrl(name,city);
+  link.target='_blank';link.rel='noopener noreferrer';return link;
+}
+const mobileMap=window.matchMedia('(max-width: 700px)').matches;
 function renderCard(item){
   const card=element('article',undefined,'guide-card');
   if(item.image){const media=element('figure',undefined,'guide-media');media.append(imageElement(item.image,item.imageAlt||item.title));card.append(media);}
@@ -41,7 +54,7 @@ function showMore(){
   button.hidden=visibleCount>=visibleItems.length;
   if(!button.hidden)button.textContent='查看更多攻略（已显示 '+visibleCount+' / '+visibleItems.length+'）';
 }
-async function search(query) {
+async function search(query,scroll=true) {
   const q=query.trim();
   if(!q||q.length>80) return;
   searchAbort?.abort(); articleAbort?.abort();
@@ -51,7 +64,7 @@ async function search(query) {
   $('#resultsTitle').textContent=q==='精选'?'全国目的地与景点':'“'+q+'”的相关景点';
   status.textContent='正在获取旅行资料…';grid.setAttribute('aria-busy','true');
   history.replaceState(null,'','?q='+encodeURIComponent(q));
-  $('#results').scrollIntoView({behavior:'smooth',block:'start'});
+  if(scroll)$('#results').scrollIntoView({behavior:'smooth',block:'start'});
   try {
     const data=await api('/api/search?q='+encodeURIComponent(q),controller.signal);
     if(controller.signal.aborted) return;
@@ -88,16 +101,24 @@ async function openArticle(id,title) {
       const section=element('section',undefined,'location-section');
       section.append(element('h3','位置地图'));
       section.append(element('p',data.mapLabel||data.title,'location-label'));
-      const delta=.012,bbox=[data.lon-delta,data.lat-delta,data.lon+delta,data.lat+delta].join(',');
-      const map=element('iframe',undefined,'location-map');
-      map.title=(data.mapLabel||data.title)+'位置地图';
-      map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(data.lat+','+data.lon);
-      map.loading='lazy';map.referrerPolicy='no-referrer';
-      section.append(map);
-      const link=element('a','打开大地图与路线 ↗','map-link');
-      link.href='https://www.openstreetmap.org/?mlat='+encodeURIComponent(data.lat)+'&mlon='+encodeURIComponent(data.lon)+'#map=14/'+data.lat+'/'+data.lon;
-      link.target='_blank';link.rel='noopener noreferrer';
-      section.append(link);
+      if(mobileMap){
+        section.append(element('p','可直接在高德地图查看；需要站内预览时再展开地图，避免打开文章就加载地图拖慢手机。','mobile-map-help'));
+        const preview=element('details',undefined,'mobile-map-preview');preview.append(element('summary','在站内展开地图'));
+        const map=element('iframe',undefined,'location-map');map.title=(data.mapLabel||data.title)+'手机位置地图';map.loading='lazy';
+        preview.addEventListener('toggle',()=>{if(preview.open&&!map.hasAttribute('src'))map.src=mapSearchUrl(data.mapLabel||data.title,data.city);});
+        preview.append(map);section.append(preview);
+      }
+      else {
+        const delta=.012,bbox=[data.lon-delta,data.lat-delta,data.lon+delta,data.lat+delta].join(',');
+        const map=element('iframe',undefined,'location-map');
+        map.title=(data.mapLabel||data.title)+'位置地图';
+        map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(data.lat+','+data.lon);
+        map.loading='lazy';map.referrerPolicy='no-referrer';section.append(map);
+      }
+      section.append(mapLink(data.mapLabel||data.title,data.city,mobileMap?'手机打开高德地图看位置 ↗':'在高德地图查看位置 ↗'));
+      const backup=element('a','备用地图 · OpenStreetMap ↗','map-backup');
+      backup.href='https://www.openstreetmap.org/?mlat='+encodeURIComponent(data.lat)+'&mlon='+encodeURIComponent(data.lon)+'#map=14/'+data.lat+'/'+data.lon;
+      backup.target='_blank';backup.rel='noopener noreferrer';section.append(backup);
       section.append(element('p',data.category==='美食'?'地图标注觅食区域，不代表指定餐厅；具体商家请以现场信息为准。':'位置仅供规划参考，请以景区当天入口与现场指引为准。','map-note'));
       fragment.append(section);
     }
@@ -119,12 +140,38 @@ async function openArticle(id,title) {
           card.append(figure,element('h4',food.title),element('p',food.snippet||''));
           card.append(element('p',(food.city===data.city?'同城觅食区域：':'同省跨城 · '+food.city+'觅食区域：')+(food.mapLabel||food.city)+'。地图仅供寻找小吃，不代表推荐某家店。','food-place'));
           if(Number.isFinite(food.lat)&&Number.isFinite(food.lon)){
-            const d=.006,bbox=[food.lon-d,food.lat-d,food.lon+d,food.lat+d].join(',');
-            const map=element('iframe',undefined,'food-map');map.title=(food.mapLabel||food.title)+'觅食位置地图';
-            map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(food.lat+','+food.lon);
-            map.loading='lazy';map.referrerPolicy='no-referrer';card.append(map);
+            if(!mobileMap){
+              const d=.006,bbox=[food.lon-d,food.lat-d,food.lon+d,food.lat+d].join(',');
+              const map=element('iframe',undefined,'food-map');map.title=(food.mapLabel||food.title)+'觅食位置地图';
+              map.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(food.lat+','+food.lon);
+              map.loading='lazy';map.referrerPolicy='no-referrer';card.append(map);
+            }
+            card.append(mapLink(food.mapLabel||food.title,food.city,'查看觅食区域地图 ↗'));
           }
           cards.append(card);
+        }
+        section.append(cards);fragment.append(section);
+      }
+    }
+    if(data.local&&Array.isArray(window.TRAVEL_RESTAURANTS)){
+      const shops=window.TRAVEL_RESTAURANTS.filter(shop=>shop.city===data.city);
+      if(shops.length){
+        const section=element('section',undefined,'restaurant-section');
+        section.append(element('h3','同城店铺候选 · '+shops.length+' 家'));
+        const budgetCounts=new Map();for(const shop of shops)budgetCounts.set(shop.budget,(budgetCounts.get(shop.budget)||0)+1);
+        section.append(element('p','比较维度：地方特色、资料来源、价格档、路线便利、口味适配与排队成本。价格档分布：'+[...budgetCounts].map(([level,count])=>level+' × '+count).join(' · ')+'。资料查阅于 2026 年 9 月，不是实时评分榜；营业、地址和菜单请出发前再次核对。','restaurant-summary'));
+        const cards=element('div',undefined,'restaurant-grid');
+        for(const shop of shops){
+          const card=element('article',undefined,'restaurant-card');
+          card.append(element('span',shop.dish+' · '+shop.budget,'restaurant-tag'),element('h4',shop.name));
+          card.append(element('p','适合：'+shop.fit,'restaurant-fit'));
+          card.append(element('p','推荐依据：'+shop.reason));
+          card.append(element('p','找店区域：'+shop.area,'restaurant-area'));
+          card.append(element('p','到访前留意：'+shop.caution,'restaurant-caution'));
+          const actions=element('div',undefined,'restaurant-actions');
+          actions.append(mapLink(shop.name,shop.city,'地图找店 ↗'));
+          const source=element('a','查看资料来源 ↗','restaurant-source');source.href=shop.url;source.target='_blank';source.rel='noopener noreferrer';actions.append(source);
+          card.append(actions,element('small',shop.source));cards.append(card);
         }
         section.append(cards);fragment.append(section);
       }
@@ -154,16 +201,19 @@ if(Array.isArray(window.TRAVEL_GUIDES)){
   const guides=window.TRAVEL_GUIDES;
   const regions=[...new Set(guides.filter(item=>item.id.startsWith('local-region-')).map(item=>item.province))];
   const foods=window.TRAVEL_FOODS||[];
+  const restaurants=window.TRAVEL_RESTAURANTS||[];
   const attractionCount=guides.filter(item=>item.category==='景点').length;
   $('#catalogStats').textContent='覆盖 '+regions.length+' 个地区 · '+attractionCount+' 篇景点攻略 · '+foods.length+' 种小吃随文推荐';
-  $('#foodStats').textContent='已核对 '+foods.length+' 种小吃的真实菜品图片与觅食区域；在相关景点攻略内查看照片和地图。';
+  $('#foodStats').textContent='已整理 '+foods.length+' 种小吃的真实菜品图片与觅食区域；北京、成都、西安、长白山的景点攻略另附 '+restaurants.length+' 家有资料来源的店铺候选。';
   const select=$('#regionSelect');
   regions.forEach(region=>{const option=element('option',region);option.value=region;select.append(option);});
   select.addEventListener('change',()=>{if(select.value)search(select.value);});
 }
 $('#retry').addEventListener('click',()=>search(lastQuery));
 $('#retryArticle').addEventListener('click',()=>openArticle(currentId,$('#articleTitle').textContent));
-$('#back').addEventListener('click',()=>{articleAbort?.abort();$('#reader').hidden=true;$('#results').hidden=false;lastFocus?.focus();});
+function backToResults(){articleAbort?.abort();$('#reader').hidden=true;$('#results').hidden=false;$('#results').scrollIntoView({behavior:'smooth',block:'start'});lastFocus?.focus({preventScroll:true});}
+$('#back').addEventListener('click',backToResults);
+$('#backBottom').addEventListener('click',backToResults);
 const initial=new URLSearchParams(location.search).get('q');
-search(initial||'精选');
+search(initial||'精选',Boolean(initial));
 
