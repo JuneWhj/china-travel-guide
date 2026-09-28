@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f2425" />
+  <meta name="description" content="行迹，整合中国热门目的地、经典路线与实用旅行攻略的精选入口。" />
+  <title>行迹 · 中国旅行攻略精选</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23f26b4f'/%3E%3Cpath d='M17 45c11-16 18-22 30-27M21 19h25v25' fill='none' stroke='%23fff8ee' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #0f2425;
+      --ink-soft: #355253;
+      --paper: #f6f2e9;
+      --paper-deep: #ece5d7;
+      --card: #fffdf8;
+      --coral: #ef6b50;
+      --coral-dark: #c94d39;
+      --lime: #c9d86b;
+      --line: rgba(15, 36, 37, .14);
+      --shadow: 0 20px 55px rgba(15, 36, 37, .10);
+      --sans: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(246,242,233,.91); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 800; letter-spacing: .04em; }
+    .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: var(--coral); color: #fff8ee; font-weight: 900; transform: rotate(-7deg); }
+    .brand small { display: block; color: #718081; font-size: 11px; font-weight: 500; letter-spacing: .16em; margin-top: 1px; }
+    .nav-links { display: flex; gap: 26px; color: #496061; font-size: 14px; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--coral-dark); }
+    .top-action { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 700; border-bottom: 1px solid var(--coral); padding-bottom: 3px; }
+    .hero { padding: 58px 0 30px; }
+    .hero-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 40px; align-items: end; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--coral-dark); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; display: block; width: 38px; height: 2px; background: var(--coral); }
+    h1 { margin: 16px 0 18px; font-family: var(--serif); font-weight: 800; font-size: clamp(42px, 6.2vw, 78px); line-height: 1.04; letter-spacing: -.06em; max-width: 720px; }
+    .hero-copy { max-width: 560px; color: #536566; font-size: 18px; line-height: 1.8; margin: 0; }
+    .hero-note { display: flex; gap: 12px; align-items: center; margin-top: 26px; color: #657878; font-size: 13px; }
+    .note-dot { width: 10px; height: 10px; background: var(--lime); border-radius: 50%; box-shadow: 0 0 0 6px rgba(201,216,107,.22); }
+    .hero-photo { min-height: 395px; border-radius: 26px; overflow: hidden; position: relative; box-shadow: var(--shadow); background: linear-gradient(160deg, #96b9af, #234447); }
+    .hero-photo img { width: 100%; height: 100%; min-height: 395px; object-fit: cover; display: block; filter: saturate(.88) contrast(.98); }
+    .hero-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 43%, rgba(15,36,37,.76)); pointer-events: none; }
+    .photo-caption { position: absolute; z-index: 1; left: 24px; right: 24px; bottom: 20px; color: #fffdf8; display: flex; justify-content: space-between; gap: 16px; font-size: 12px; }
+    .photo-caption a { color: #fffdf8; text-underline-offset: 3px; }
+    .search-panel { margin: 25px 0 18px; padding: 10px; background: var(--ink); border-radius: 18px; display: flex; gap: 10px; box-shadow: 0 14px 30px rgba(15,36,37,.12); }
+    .search-box { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 0 15px; background: #fffdf8; border-radius: 11px; }
+    .search-box span { color: var(--coral); font-size: 20px; }
+    .search-box input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); padding: 12px 0; font-size: 16px; }
+    .search-box input::placeholder { color: #839090; }
+    .search-panel select { width: 150px; border: 0; border-radius: 11px; padding: 0 14px; color: var(--ink); background: var(--lime); outline: 0; cursor: pointer; }
+    .section { padding: 64px 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 25px; }
+    .section-kicker { color: var(--coral-dark); font-size: 12px; font-weight: 800; letter-spacing: .13em; }
+    h2 { font-family: var(--serif); font-size: clamp(28px, 3vw, 42px); line-height: 1.15; letter-spacing: -.04em; margin: 7px 0 0; }
+    .section-desc { max-width: 420px; color: #6b7a79; text-align: right; font-size: 14px; }
+    .route-grid { display: grid; grid-template-columns: 1.55fr 1fr 1fr; gap: 14px; }
+    .route-card { min-height: 240px; padding: 25px; position: relative; overflow: hidden; border-radius: 20px; color: #fffdf8; text-decoration: none; display: flex; flex-direction: column; justify-content: space-between; background: var(--ink); }
+    .route-card::before { content: ""; position: absolute; inset: 0; opacity: .72; background: radial-gradient(circle at 20% 10%, rgba(239,107,80,.8), transparent 30%), linear-gradient(135deg, transparent 38%, rgba(201,216,107,.4)); }
+    .route-card.large { min-height: 340px; }
+    .route-card.mountain { background: #315961; }
+    .route-card.city { background: #7d5040; }
+    .route-card.sea { background: #2f5e6d; }
+    .route-card > * { position: relative; z-index: 1; }
+    .route-card small { opacity: .78; font-size: 12px; letter-spacing: .1em; }
+    .route-card h3 { margin: 4px 0 0; font-family: var(--serif); font-size: clamp(26px, 3vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+    .route-card p { margin: 8px 0 0; max-width: 330px; color: rgba(255,253,248,.78); font-size: 13px; }
+    .route-meta { display: flex; justify-content: space-between; align-items: center; color: rgba(255,253,248,.85); font-size: 12px; }
+    .route-arrow { width: 33px; height: 33px; border: 1px solid rgba(255,253,248,.5); border-radius: 50%; display: grid; place-items: center; font-size: 18px; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 22px; }
+    .filter { cursor: pointer; border: 1px solid var(--line); color: #5d6e6e; background: transparent; border-radius: 999px; padding: 8px 15px; font-size: 13px; transition: .2s ease; }
+    .filter:hover, .filter.active { background: var(--ink); color: #fffdf8; border-color: var(--ink); }
+    .guide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .guide-card { background: var(--card); border: 1px solid rgba(15,36,37,.1); border-radius: 18px; padding: 22px; min-height: 228px; display: flex; flex-direction: column; transition: transform .22s ease, box-shadow .22s ease; }
+    .guide-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .guide-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #718181; font-size: 12px; }
+    .guide-source { color: var(--coral-dark); font-weight: 800; }
+    .tag { color: var(--ink); background: #e8edc6; padding: 4px 8px; border-radius: 6px; }
+    .guide-card h3 { margin: 17px 0 8px; font-size: 20px; line-height: 1.35; letter-spacing: -.03em; }
+    .guide-card p { margin: 0; color: #6a7a7a; font-size: 14px; line-height: 1.7; }
+    .guide-link { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 20px; font-size: 13px; font-weight: 800; color: var(--ink); text-decoration: none; }
+    .guide-link span:last-child { color: var(--coral); font-size: 19px; }
+    .empty { display: none; padding: 35px; border: 1px dashed var(--line); border-radius: 16px; color: #6a7a7a; text-align: center; }
+    .empty.show { display: block; }
+    .submit-strip { margin-top: 22px; padding: 21px 24px; background: var(--paper-deep); border-radius: 17px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .submit-strip strong { font-size: 15px; }
+    .submit-strip span { display: block; color: #728080; font-size: 13px; margin-top: 3px; }
+    .submit-strip a { white-space: nowrap; color: var(--coral-dark); font-weight: 800; font-size: 13px; text-decoration: none; }
+    footer { border-top: 1px solid var(--line); padding: 28px 0 44px; color: #718181; font-size: 12px; }
+    footer .foot-row { display: flex; justify-content: space-between; gap: 24px; }
+    @media (max-width: 850px) {
+      .wrap { width: min(100% - 28px, 680px); }
+      .nav-links { display: none; }
+      .top-action { display: none; }
+      .hero { padding-top: 35px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 25px; }
+      .hero-photo { min-height: 285px; }
+      .hero-photo img { min-height: 285px; }
+      .search-panel { flex-direction: column; }
+      .search-panel select { width: 100%; min-height: 46px; }
+      .section { padding: 45px 0; }
+      .section-head { display: block; }
+      .section-desc { text-align: left; margin-top: 12px; }
+      .route-grid { grid-template-columns: 1fr 1fr; }
+      .route-card.large { grid-column: 1 / -1; min-height: 280px; }
+      .guide-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      h1 { font-size: 47px; }
+      .hero-copy { font-size: 16px; }
+      .route-grid, .guide-grid { grid-template-columns: 1fr; }
+      .route-card.large { grid-column: auto; }
+      .section-head { margin-bottom: 19px; }
+      .submit-strip, footer .foot-row { display: block; }
+      .submit-strip a { display: inline-block; margin-top: 14px; }
+      footer .foot-row > * + * { margin-top: 10px; }
+    }
+  </style>
+<style>
+.hero {padding:36px 0 20px} h1 {font-size:clamp(36px,6vw,64px);letter-spacing:-.025em;line-height:1.25}
+.source-note {font-size:14px;color:#536566;line-height:1.8}
+.search-submit {background:var(--lime);color:var(--ink);border:0;border-radius:10px;padding:14px 24px;cursor:pointer;white-space:nowrap}
+button:focus-visible,a:focus-visible,input:focus-visible {outline:3px solid var(--coral);outline-offset:3px}
+.search-box:focus-within {outline:3px solid var(--coral)}
+.guide-link {border:0;background:transparent;cursor:pointer;font-size:16px;text-align:left;width:100%}
+.guide-card p {font-size:16px}.filter {font-size:14px} #status {font-size:14px} #reader h2 {margin:24px 0}
+.guide-media {margin:-22px -22px 18px;height:180px;overflow:hidden;background:#dfe7dd}
+.guide-media img {width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s ease}
+.guide-card:hover .guide-media img {transform:scale(1.04)}
+.article-figure {margin:20px 0 30px;border-radius:18px;overflow:hidden;background:#dfe7dd}
+.article-image {display:block;width:100%;max-height:430px;object-fit:cover}
+.article-figure figcaption {padding:9px 14px;color:#647575;background:var(--paper-deep);font-size:13px}
+.article-figure a {color:var(--coral-dark);margin-left:4px}
+.article-body {max-width:800px;font-size:17px;line-height:1.95;overflow-wrap:anywhere}
+.article-body h3 {font-size:24px;line-height:1.5;margin:32px 0 12px}
+.article-body p {white-space:pre-wrap} .landscape {margin:40px 0;min-height:180px;height:200px}
+.landscape img {min-height:0;height:200px} [hidden]{display:none!important} #reader {scroll-margin-top:100px}
+.location-section {margin:38px 0;padding:22px;background:#fffdf8;border:1px solid var(--line);border-radius:18px}
+.location-section h3 {margin:0 0 4px!important}.location-label {margin:0 0 14px!important;font-weight:700;color:var(--ink-soft)}
+.location-map {display:block;width:100%;height:350px;border:0;border-radius:12px;background:#e7ece8}
+.map-link {display:inline-block;margin-top:13px;color:var(--coral-dark);font-weight:800;text-underline-offset:3px}
+.map-note {font-size:13px;color:#647575;line-height:1.6;margin:8px 0 0!important}
+.guide-card .guide-source {font-size:12px}.guide-card {overflow:hidden}
+@media(max-width:560px){.nav>span {font-size:12px}.search-panel{flex-direction:column}.section-head{display:block}.photo-caption{font-size:12px;flex-wrap:wrap}}
+</style></head>
+<body>
+<header class="topbar"><div class="wrap nav"><a class="brand" href="./"><span class="brand-mark">↗</span><span>行迹<small>TRAVEL NOTES OF CHINA</small></span></a><span>公开访问 · 发给朋友一起看</span></div></header>
+<main class="wrap">
+<section class="hero">
+<div class="eyebrow">CHINA TRAVEL LIBRARY</div>
+<h1>下一站，站内查。</h1>
+<p class="hero-copy">从长白山到桂林，从故宫到一碗米粉。搜景点、搜美食，站内看清晰图片、实用攻略和位置地图。</p>
+<form class="search-panel" id="searchForm" role="search">
+<label class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="searchInput" maxlength="80" required placeholder="搜城市、景点或美食，例如长白山、火锅" aria-label="搜索目的地、景点或美食"></label>
+<button class="search-submit" type="submit">搜索攻略</button>
+</form>
+<div class="filters" aria-label="快速探索"><button type="button" class="filter" data-query="精选">全部精选</button><button type="button" class="filter" data-query="景点">景点</button><button type="button" class="filter" data-query="美食">美食</button><button type="button" class="filter" data-query="长白山">长白山</button><button type="button" class="filter" data-query="北京">北京</button><button type="button" class="filter" data-query="西安">西安</button><button type="button" class="filter" data-query="成都">成都</button><button type="button" class="filter" data-query="大理">大理</button><button type="button" class="filter" data-query="桂林">桂林</button><button type="button" class="filter" data-query="泉州">泉州</button></div>
+<p class="source-note">精选内容可直接站内阅读；地图嵌入页面。更多目的地会检索维基导游，仅展示有图片和坐标的资料。图片来源见各篇正文。</p>
+</section>
+<section id="results" aria-labelledby="resultsTitle">
+<div class="section-head"><h2 id="resultsTitle">搜索旅行目的地</h2><span id="status" role="status" aria-live="polite">选择上方目的地开始</span></div>
+<div id="guideGrid" class="guide-grid"></div>
+<div class="empty show" id="emptyState">正在加载精选图文攻略…</div>
+<button id="retry" class="filter" hidden>重新搜索</button>
+</section>
+<section class="section" id="reader" hidden aria-labelledby="articleTitle">
+<button class="filter" id="back">返回搜索结果</button>
+<h2 id="articleTitle" tabindex="-1"></h2>
+<p id="articleStatus" role="status" aria-live="polite"></p>
+<div id="articleBody" class="article-body"></div>
+<div id="attribution" class="source-note"></div>
+<button id="retryArticle" class="filter" hidden>重新加载正文</button>
+</section>
+<figure class="hero-photo landscape"><img src="https://images.unsplash.com/photo-1557750223-53916b138a90?auto=format&fit=crop&q=80&w=1200" alt="桂林山水" loading="lazy"><figcaption class="photo-caption"><span>桂林 · 山水之间</span><a href="https://unsplash.com/photos/trees-near-body-of-water-pBg2i0aUOec" target="_blank" rel="noopener noreferrer">摄影：Zhimai Zhang / Unsplash</a></figcaption></figure>
+</main>
+<footer><div class="wrap">本站精选攻略由行迹编辑整理；补充条目来自维基导游，按 CC BY-SA 4.0 提供。照片来源与授权见各篇图片说明。资料可能滞后；票价、开放时间与预约要求请以当地最新公告为准。仅当站内精选无匹配时，搜索词会发送给维基导游查询。</div></footer>
+<script src="./data.js" defer></script>
+<script src="./static-api.js" defer></script>
+<script src="./app.js" defer></script>
+</body></html>
+
