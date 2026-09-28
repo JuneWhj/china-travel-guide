@@ -1,6 +1,37 @@
 const normalize=value=>String(value||'').toLowerCase().replace(/[\s·•—–-]/g,'');
 const guideById=new Map(window.TRAVEL_GUIDES.map(item=>[item.id,item]));
 const reply=(value,status=200)=>Response.json(value,{status});
+const regions=window.TRAVEL_GUIDES.filter(item=>item.id.startsWith('local-region-'));
+const asSearchItem=item=>({id:item.id,title:item.title,snippet:item.snippet,sourceLabel:item.source,local:true,image:item.image,imageAlt:item.imageAlt,imageSource:item.imageSource,imageSourceUrl:item.imageSourceUrl,category:item.category,attractionType:item.attractionType,recommendation:item.recommendation,city:item.city,province:item.province,mapLabel:item.mapLabel});
+function localSearch(q){
+  const key=normalize(q);
+  const placeKey=key.replace(/(旅游攻略|好玩的地方|旅游|攻略|景点)$/,'').replace(/(特别行政区|自治区|省|市)$/,'');
+  if(key==='精选'||key==='热门')return {items:window.TRAVEL_GUIDES,kind:'featured'};
+  if(key==='目的地')return {items:regions,kind:'category'};
+  if(key==='景点')return {items:window.TRAVEL_GUIDES.filter(item=>item.category==='景点'),kind:'category'};
+  if(['自然风光','古迹人文','城市漫游','亲子体验'].includes(q))return {items:window.TRAVEL_GUIDES.filter(item=>item.attractionType===q),kind:'type'};
+  if(key==='美食'||key==='小吃')return {items:regions,kind:'food',notice:'美食照片、推荐理由与觅食位置已放进各地景点攻略。'};
+  const province=regions.find(item=>normalize(item.province)===placeKey)?.province;
+  if(province){
+    const items=window.TRAVEL_GUIDES.filter(item=>item.province===province&&(item.category==='景点'||item.id.startsWith('local-region-')));
+    return {items,kind:'place',place:province};
+  }
+  const city=window.TRAVEL_GUIDES.find(item=>normalize(item.city)===placeKey)?.city;
+  if(city){
+    const own=window.TRAVEL_GUIDES.filter(item=>item.city===city&&(item.category==='景点'||item.id.startsWith('local-region-')));
+    const homeProvince=own[0]?.province;
+    const extension=window.TRAVEL_GUIDES.filter(item=>item.province===homeProvince&&item.city!==city&&(item.category==='景点'||item.id.startsWith('local-region-')));
+    return {items:[...own,...extension],kind:'place',place:city,localCity:city,notice:extension.length?'先显示市内景点；标注“同省延伸”的景点可能相距较远，请另算跨城交通。':''};
+  }
+  const food=(window.TRAVEL_FOODS||[]).find(item=>normalize(item.title).includes(key)||item.aliases?.some(alias=>normalize(alias)===key));
+  if(food){
+    const items=window.TRAVEL_GUIDES.filter(item=>item.category==='景点'&&(item.city===food.city||item.province===food.province));
+    return {items,kind:'food',place:food.city,notice:'这道小吃的照片和觅食位置在相关景点攻略内。'};
+  }
+  const items=window.TRAVEL_GUIDES.filter(item=>[item.title,...(item.aliases||[]),item.city,item.province,item.category,item.attractionType].some(alias=>{const value=normalize(alias);return value&&(value.includes(key)||key.includes(value));}));
+  items.sort((a,b)=>Number(normalize(b.title).includes(key))-Number(normalize(a.title).includes(key)));
+  return {items,kind:'query'};
+}
 async function wiki(params,signal){
   const url=new URL('https://zh.wikivoyage.org/w/api.php');
   for(const [key,value] of Object.entries({action:'query',format:'json',formatversion:'2',variant:'zh-cn',origin:'*',...params}))url.searchParams.set(key,value);
@@ -15,10 +46,8 @@ async function staticApi(path,signal){
   if(request.pathname.endsWith('/api/search')){
     const q=(request.searchParams.get('q')||'').trim();
     if(!q||q.length>80)return reply({error:'请输入 1–80 字的目的地名称'},400);
-    const key=normalize(q);
-    const local=(key==='精选'||key==='热门'?window.TRAVEL_GUIDES:window.TRAVEL_GUIDES.filter(item=>[item.title,...item.aliases,item.city,item.category].some(alias=>normalize(alias).includes(key)||key.includes(normalize(alias)))))
-      .map(item=>({id:item.id,title:item.title,snippet:item.snippet,sourceLabel:item.source,local:true,image:item.image,imageAlt:item.imageAlt,imageSource:item.imageSource,imageSourceUrl:item.imageSourceUrl,category:item.category,city:item.city,mapLabel:item.mapLabel}));
-    if(local.length)return reply({items:local,live:false,notice:'已优先展示站内精选。'});
+    const local=localSearch(q);
+    if(local.items.length)return reply({...local,items:local.items.map(item=>({...asSearchItem(item),scope:local.localCity&&item.city!==local.localCity?'同省延伸':null})),live:false});
     try{
       const result=await wiki({list:'search',srsearch:q,srnamespace:'0',srlimit:'12',srprop:'snippet'},signal);
       const found=result.query?.search||[];
