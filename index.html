@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f2425" />
-  <meta name="description" content="行迹，覆盖中国各地区的目的地、景点和特色小吃图文攻略，附位置地图与透明的推荐依据。" />
+  <meta name="description" content="行迹，搜索中国地名即可查看当地多种景点、图文攻略与位置地图；在景点文章里查看真实小吃照片和觅食位置。" />
   <title>行迹 · 中国旅行攻略地图</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23f26b4f'/%3E%3Cpath d='M17 45c11-16 18-22 30-27M21 19h25v25' fill='none' stroke='%23fff8ee' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <style>
@@ -179,9 +179,10 @@ body{background:var(--paper)}.topbar{background:#fff;border-bottom:1px solid var
 .method-strip{margin:16px 0 42px;padding:24px 28px;border-radius:17px;background:#e6edf0;border-left:4px solid #d39c53;color:#34515f}.method-strip strong{display:block;color:var(--ink);font-size:18px;margin-bottom:7px}.method-strip p{margin:0;line-height:1.75;font-size:15px}.method-strip small{display:block;margin-top:9px;line-height:1.6}
 .more-results{display:block;margin:26px auto 0;border:1px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-weight:800;padding:12px 26px;cursor:pointer}.more-results:hover{background:var(--ink);color:#fff}
 #reader{background:#fff;border-radius:22px;padding:30px;margin-bottom:46px;box-shadow:0 8px 30px rgba(16,42,53,.06)}.location-section{background:#f3f7f7}.article-body p{line-height:1.85}
+.food-section{margin:44px 0 8px;padding-top:26px;border-top:1px solid var(--line)}.food-section h3{margin:0 0 6px!important}.food-intro{color:#516773;font-size:15px;margin:0 0 20px!important}.food-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.food-card{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#f8fafa}.food-photo{margin:0;background:#e5ecec}.food-photo img{display:block;width:100%;height:225px;object-fit:cover}.food-photo figcaption{padding:7px 14px;font-size:12px;color:#526a77}.food-photo a{color:#785425}.food-card h4{font-size:20px;margin:12px 16px 4px}.food-card p{font-size:14px;line-height:1.65;margin:4px 16px 10px!important}.food-card .food-place{font-weight:700}.food-map{display:block;width:calc(100% - 32px);height:205px;margin:12px 16px 16px;border:0;border-radius:9px;background:#e8eeee}
 footer{background:#102a35;color:rgba(255,255,255,.75);border:0}.section-head h2{color:var(--ink)}
 @media(max-width:850px){.hero{min-height:560px;padding:55px 0 38px}.hero>*{width:min(100% - 28px,680px)}.search-panel{margin-left:14px;max-width:calc(100% - 28px)}.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.hero{min-height:570px}.hero h1{font-size:clamp(42px,10vw,58px)}.hero-copy{font-size:16px}.hero .filter:nth-of-type(n+7){display:none}.guide-grid{grid-template-columns:1fr}.guide-media{height:210px}.catalog-toolbar select{width:100%}#reader{padding:18px}}
+@media(max-width:560px){.hero{min-height:570px}.hero h1{font-size:clamp(42px,10vw,58px)}.hero-copy{font-size:16px}.hero .filter:nth-of-type(n+7){display:none}.guide-grid,.food-grid{grid-template-columns:1fr}.guide-media{height:210px}.catalog-toolbar select{width:100%}#reader{padding:18px}}
 </style></head>
 <body>
 <header class="topbar"><div class="wrap nav"><a class="brand" href="./"><span class="brand-mark">↗</span><span>行迹<small>TRAVEL NOTES OF CHINA</small></span></a><span>公开访问 · 发给朋友一起看</span></div></header>
@@ -189,12 +190,12 @@ footer{background:#102a35;color:rgba(255,255,255,.75);border:0}.section-head h2{
 <section class="hero">
 <div class="eyebrow">CHINA TRAVEL LIBRARY</div>
 <h1>山河很大，<br>下一站慢慢选。</h1>
-<p class="hero-copy">从长白山、九寨沟到海边与古城，按地区、景点和小吃查找可直接阅读的图文攻略。每篇附参考地图，出发前更好规划。</p>
+<p class="hero-copy">输入地名，就能一起看到当地值得考虑的自然、人文与城市景点。打开景点攻略，还能看真实小吃照片、推荐理由和觅食地图。</p>
 <form class="search-panel" id="searchForm" role="search">
-<label class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="searchInput" maxlength="80" required placeholder="搜城市、景点或美食，例如长白山、火锅" aria-label="搜索目的地、景点或美食"></label>
+<label class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="searchInput" maxlength="80" required placeholder="搜地名或景点，例如成都、长白山、天坛" aria-label="搜索地名或景点"></label>
 <button class="search-submit" type="submit">搜索攻略</button>
 </form>
-<div class="filters" aria-label="快速探索"><button type="button" class="filter" data-query="精选">全部攻略</button><button type="button" class="filter" data-query="目的地">地区路线</button><button type="button" class="filter" data-query="景点">景点</button><button type="button" class="filter" data-query="美食">特色小吃</button><button type="button" class="filter" data-query="长白山">长白山</button><button type="button" class="filter" data-query="九寨沟">九寨沟</button><button type="button" class="filter" data-query="黄山">黄山</button><button type="button" class="filter" data-query="西安">西安</button></div>
+<div class="filters" aria-label="快速探索"><button type="button" class="filter" data-query="精选">全部攻略</button><button type="button" class="filter" data-query="自然风光">自然风光</button><button type="button" class="filter" data-query="古迹人文">古迹人文</button><button type="button" class="filter" data-query="城市漫游">城市漫游</button><button type="button" class="filter" data-query="亲子体验">亲子体验</button><button type="button" class="filter" data-query="北京">北京</button><button type="button" class="filter" data-query="西安">西安</button><button type="button" class="filter" data-query="成都">成都</button><button type="button" class="filter" data-query="长白山">长白山</button></div>
 <p class="source-note">封面摄影：<a class="hero-credit" href="https://unsplash.com/photos/trees-near-body-of-water-pBg2i0aUOec" target="_blank" rel="noopener noreferrer">桂林山水 · Zhimai Zhang / Unsplash</a> · 图片与位置用于行程参考</p>
 </section>
 <section id="results" aria-labelledby="resultsTitle">
@@ -205,7 +206,7 @@ footer{background:#102a35;color:rgba(255,255,255,.75);border:0}.section-head h2{
 <button id="retry" class="filter" hidden>重新搜索</button>
 <button id="moreResults" class="more-results" hidden>查看更多攻略</button>
 </section>
-<aside class="method-strip" id="foodMethod"><strong>小吃推荐怎么看</strong><p id="foodStats"></p><small>推荐综合地方特色、步行与交通便利、菜单和价格透明度、卫生与饮食适配；不引用未经核验的好评数，也不做“必吃店”排名。地图标的是方便寻找的街区，不是指定商家。</small></aside>
+<aside class="method-strip" id="foodMethod"><strong>景点与小吃怎么选</strong><p id="foodStats"></p><small>景点推荐看代表性、体验类型、路线搭配和到访门槛；不展示未经核验的“好评率”。小吃只放在景点攻略内，用真实菜品照片，结合地方特色、价格透明度、卫生和饮食适配说明推荐理由。觅食地图标的是街区，不是指定商家。</small></aside>
 <section class="section" id="reader" hidden aria-labelledby="articleTitle">
 <button class="filter" id="back">返回搜索结果</button>
 <h2 id="articleTitle" tabindex="-1"></h2>
@@ -215,10 +216,14 @@ footer{background:#102a35;color:rgba(255,255,255,.75);border:0}.section-head h2{
 <button id="retryArticle" class="filter" hidden>重新加载正文</button>
 </section>
 </main>
-<footer><div class="wrap">本站攻略为非实时旅行规划参考；票价、开放时间、交通和预约请以当地最新公告为准。图片作者与授权见各篇正文。站内无匹配时才查询维基导游补充资料。</div></footer>
+<footer><div class="wrap">本站攻略为非实时旅行规划参考，不展示未经核验的游客评分。票价、开放时间、交通和预约请以当地最新公告为准。真实景点与菜品照片的来源见各篇正文。站内无匹配时才查询维基导游补充资料。</div></footer>
 <script src="./data.js" defer></script>
 <script src="./regions-1.js" defer></script>
 <script src="./regions-2.js" defer></script>
+<script src="./attractions-1.js" defer></script>
+<script src="./attractions-2.js" defer></script>
+<script src="./attractions-3.js" defer></script>
+<script src="./attractions-4.js" defer></script>
 <script src="./foods-data.js" defer></script>
 <script src="./static-api.js" defer></script>
 <script src="./app.js" defer></script>
